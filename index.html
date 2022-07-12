@@ -1,0 +1,1063 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>飞机大战</title>
+	<meta charset="utf-8" />
+	<style>
+	#tips{
+		position:absolute;
+		right:20px;
+		top:10px;
+		width:130px;
+		height:200px;
+		background:#111;
+		color:#eee;
+		padding:10px;
+		font-family:"微软雅黑";
+		font-size:14px;
+	}
+	#bishatips{
+		position:absolute;
+		right:20px;
+		top:245px;
+		width:130px;
+		height:200px;
+		background:#111;
+		color:#eee;
+		padding:10px;
+		font-family:"微软雅黑";
+		font-size:14px;
+	}
+	</style>
+</head>
+<body>
+
+<div id="stage" style="margin:0px auto;
+width:1000px;height:650px;background:#232323;">
+	<canvas id="canvas" width="1000" height="650">
+	您的浏览器不支持canvas
+	</canvas>
+</div>
+<div id="tips">小：过一个扣5分，敌机增加<hr size="1" color="#bbb"/>
+中：打一个加5分，敌机减少<hr size="1" color="#bbb"/>
+大：奖励子弹射速，生命+1<h2 style="text-align:center">规则</h2></div>
+<div id="tiaoji" ><input type="button" value="BOSS关卡" onclick="tiaoji()" /></div>
+<div id="bishatips"><div style="color:red">必杀技</div><hr size="1" color="#bbb"/>
+BOSS放大招时，根据弱点释放对应招数<hr size="1" color="#bbb"/>
+写轮眼：上下空格<hr size="1" color="#bbb"/>
+白眼：左右空格</div>
+
+<audio src="mp3/jiu.mp3" id="jiu"></audio>
+<audio src="mp3/baozha.mp3" id="baozha"></audio>
+<audio src="mp3/bossbg.mp3" id="bossbg"></audio>
+<audio src="mp3/hong.mp3" id="hong"></audio>
+<audio src="mp3/bai.mp3" id="bai"></audio>
+<audio src="mp3/xiaobao.mp3" id="xiaobao"></audio>
+<audio src="mp3/siba.mp3" id="siba"></audio>
+<audio src="mp3/jiujiu.mp3" id="jiujiu"></audio>
+
+
+
+<script>
+	/*****************************声明**************/
+	var canvas=document.getElementById("canvas");
+	var siba=document.getElementById("siba");
+	var xiaobao=document.getElementById("xiaobao");
+	var jiu=document.getElementById("jiu");
+	var jiujiu=document.getElementById("jiujiu");
+	var baozha=document.getElementById("baozha");
+	var bossbg=document.getElementById("bossbg");
+	var hong3=document.getElementById("hong");
+	var bai3=document.getElementById("bai");
+	var ctx=canvas.getContext("2d");
+	var bg=new Image();
+		bg.src="img/background.png";
+	var START=0;
+	var STARTING=1;
+	var RUNNING=2;
+	var PAUSE=3;
+	var GAMEOVER=4;
+	var YES=5;
+	var state=START;
+	var WIDTH=1000;
+	var HEIGHT=650;
+	var SCORE=0;
+	var LIFE=3;
+	var SSS=5;
+	var interval=400;
+	var SHOOTINTERVAL=100;
+	var jiguanginterval=500;
+	var lastTime=0;
+	var h=[];
+		h[0]=new Image();
+		h[0].src="img/hero1.png";
+		h[1]=new Image();
+		h[1].src="img/hero2.png";
+		h[2]=new Image();
+		h[2].src="img/hero_blowup_n1.png";
+		h[3]=new Image();
+		h[3].src="img/hero_blowup_n2.png";
+		h[4]=new Image();
+		h[4].src="img/hero_blowup_n3.png";
+		h[5]=new Image();
+		h[5].src="img/hero_blowup_n4.png";
+	var loading=[];
+		loading[0]=new Image();
+		loading[0].src="img/game_loading1.png";
+		loading[1]=new Image();
+		loading[1].src="img/game_loading2.png";
+		loading[2]=new Image();
+		loading[2].src="img/game_loading3.png";
+		loading[3]=new Image();
+		loading[3].src="img/game_loading4.png";
+	var logo=new Image();
+		logo.src="img/shoot_copyright.png";
+	var pause=new Image();
+		pause.src="img/game_pause_nor.png";
+	var e_1=[];
+		e_1[0]=new Image();
+		e_1[0].src="img/enemy1.png";
+		e_1[1]=new Image();
+		e_1[1].src="img/enemy1_down1.png";
+		e_1[2]=new Image();
+		e_1[2].src="img/enemy1_down2.png";
+		e_1[3]=new Image();
+		e_1[3].src="img/enemy1_down3.png";
+		e_1[4]=new Image();
+		e_1[4].src="img/enemy1_down4.png";
+	var e_2=[];
+		e_2[0]=new Image();
+		e_2[0].src="img/enemy2.png";
+		e_2[1]=new Image();
+		e_2[1].src="img/enemy2_down1.png";
+		e_2[2]=new Image();
+		e_2[2].src="img/enemy2_down2.png";
+		e_2[3]=new Image();
+		e_2[3].src="img/enemy2_down3.png";
+		e_2[4]=new Image();
+		e_2[4].src="img/enemy2_down4.png";
+	var e_3=[];
+		e_3[0]=new Image();
+		e_3[0].src="img/enemy3_n1.png";
+		e_3[1]=new Image();
+		e_3[1].src="img/enemy3_n2.png";
+		e_3[2]=new Image();
+		e_3[2].src="img/enemy3_down1.png";
+		e_3[3]=new Image();
+		e_3[3].src="img/enemy3_down2.png";
+		e_3[4]=new Image();
+		e_3[4].src="img/enemy3_down3.png";
+		e_3[5]=new Image();
+		e_3[5].src="img/enemy3_down4.png";
+		e_3[6]=new Image();
+		e_3[6].src="img/enemy3_down5.png";
+	var bulletImg=new Image();
+		bulletImg.src="img/bullet1.png";
+	var bo=new Image();
+		bo.src="img/boss1.png";
+	var buji=new Image();
+		buji.src="img/ufo2.png";
+	var hong=new Image();
+		hong.src="img/bishahong.png";
+	var bai=new Image();
+		bai.src="img/bishabai.png";
+	var bosshong=new Image();
+		bosshong.src="img/bosshong.jpg";
+	var bossbai=new Image();
+		bossbai.src="img/bossbai.jpg";
+	var hongtu=new Image();
+		hongtu.src="img/hong.jpg";
+	var baitu=new Image();
+		baitu.src="img/bai.jpg";
+		
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	/**************************数据对象***********/
+	var SKY={
+		image:bg,
+		width:1000,
+		height:852,
+		speed:10
+	};
+	var LOADING={
+		frames:loading,
+		width:186,
+		height:38,
+		speed:100
+	};
+	var HERO={
+		frames:h,
+		width:99,
+		height:124,
+		speed:20,
+		baseFrameCount:2
+	};
+	var ENEMY1={
+		type:1,
+		frames:e_1,
+		width:57,
+		height:51,
+		baseFrameCount:1,
+		score:1,
+		life:2,
+		minSpeed:10,
+		maxSpeed:30,
+	};
+	var ENEMY2={
+		type:2,
+		frames:e_2,
+		width:69,
+		height:95,
+		baseFrameCount:1,
+		score:5,
+		life:20,
+		minSpeed:30,
+		maxSpeed:70,
+	};
+	var ENEMY3={
+		type:3,
+		frames:e_3,
+		width:169,
+		height:258,
+		baseFrameCount:2,
+		score:20,
+		life:100,
+		speed:100
+	};
+	var BULLET={
+		background:bulletImg,
+		width:9,
+		height:21,
+		speed:10,
+		canDelete:false
+	};
+	
+	
+	
+	
+	
+	/**************************业务对象***********/
+	var Loading=function(config){
+		this.frames=config.frames;
+		this.width=config.width;
+		this.height=config.height;
+		this.x=0;
+		this.y=HEIGHT-this.height;
+		this.speed=config.speed;
+		this.lastTime=0;
+		this.frameIndex=0;
+		this.frame=this.frames[0];
+		this.step=function(){
+			var currentTime=new Date().getTime();
+			if(currentTime-this.lastTime>=this.speed){
+				this.frame=this.frames[this.frameIndex];
+				//console.log(this.frame);
+				this.frameIndex++;
+				if(this.frameIndex==this.frames.length){
+					state=RUNNING;
+					this.frameIndex=0;
+				}
+				this.lastTime=currentTime;
+			}
+		}
+		this.paint=function(ctx){
+			ctx.drawImage(this.frame,this.x,this.y);
+		}
+	}
+	var Sky=function(config){
+		this.image=config.image;
+		this.width=config.width;
+		this.height=config.height;
+		this.speed=config.speed;
+		this.x1=0;
+		this.y1=0;
+		this.x2=0;
+		this.y2=-this.height;
+		this.lastTime=0;
+		this.step=function(){
+			var currentTime=new Date().getTime();
+			if(currentTime-this.lastTime>=this.speed){
+				this.y1++;
+				this.y2++;
+				if(this.y1>=this.height){
+		 			this.y1=-this.height;
+				}
+				if(this.y2>=this.height){
+					this.y2=-this.height;
+				}
+				this.lastTime=currentTime;
+			}
+		}
+		this.paint=function(ctx){
+			ctx.drawImage(this.image,this.x1,this.y1);
+			ctx.drawImage(this.image,this.x2,this.y2);
+		}
+	}
+	function Hero(config){
+		this.frames=config.frames;
+		this.width=config.width;
+		this.height=config.height;
+		this.speed=config.speed;
+		this.baseFrameCount=config.baseFrameCount;
+		this.lastTime=0;
+		this.x=(WIDTH-this.width)/2;
+		this.y=HEIGHT-this.height;
+		this.frameIndex=0;
+		this.frame=this.frames[0];
+		this.down=false;
+		this.canDelete=false;
+		this.bisha_hong=false;
+		this.bisha_bai=false;
+		this.step=function(){
+			var currentTime=new Date().getTime();
+			if(currentTime-this.lastTime>=this.speed){
+				if(this.down){
+					this.frame=this.frames[this.frameIndex];
+					this.frameIndex++;
+					if(this.frameIndex==this.frames.length){
+						this.canDelete=true;
+						this.frameIndex=0;
+						this.down=false;
+					}
+				}else{
+					this.frame=this.frames[this.frameIndex%
+					this.baseFrameCount];
+					this.frameIndex++;
+					if(this.frameIndex==99){
+						this.frameIndex=0;
+					}
+				}
+				this.lastTime=currentTime;
+			}
+		}
+		this.paint=function(ctx){
+			ctx.drawImage(this.frame,this.x,this.y);
+		}
+		this.shootLastTime=0;
+		
+		this.shoot=function(){
+			var currentTime=new Date().getTime();
+			if(currentTime-this.shootLastTime>=SHOOTINTERVAL){
+				bullets.push(new Bullet(BULLET));
+				this.shootLastTime=currentTime;
+			}
+		}
+		
+	}
+	function Enemy(config){//敌人构造函数
+		this.type=config.type;
+		this.down=false;
+		this.canDelete=false;
+		this.score=config.score;
+		this.life=config.life;
+		this.frames=config.frames;
+		this.frame=config.frames[0];
+		this.frameIndex=0;
+		this.width=config.width;
+		this.height=config.height;
+		this.baseFrameCount=config.baseFrameCount;
+		this.lastTime=0;//	0~WIDTH-this.width
+		this.x=parseInt(Math.random()*(WIDTH-this.width));
+		this.y=-this.height;
+		if(config.minSpeed&&config.maxSpeed){
+			this.speed=Math.random()*(config.maxSpeed-
+			config.minSpeed)+config.minSpeed;
+		}else if(config.speed){
+			this.speed=config.speed;
+		}
+		this.step=function(){
+			var currentTime=new Date().getTime();
+			if(currentTime-this.lastTime>=this.speed){
+				if(this.down){
+					this.frame=this.frames[this.frameIndex];
+					this.frameIndex++;
+					if(this.frameIndex==this.frames.length){
+						this.canDelete=true;
+						SCORE+=this.score;
+					}
+				}else{
+				this.frame=this.frames[this.frameIndex%
+				this.baseFrameCount];
+
+				this.frameIndex++;
+				this.y++;
+				}
+				this.lastTime=currentTime;
+			}
+		}
+		this.paint=function(ctx){
+			ctx.drawImage(this.frame,this.x,this.y);
+			
+		}
+		this.outOfBounds=function(){
+			return this.y>HEIGHT;
+		}
+		this.hit=function(component){
+			var c=component;
+			return c.x+c.width/2>this.x-c.width/2&&
+			c.x+c.width/2<this.x+this.width+c.width/2&&
+			c.y+c.height/2>this.y-c.height/2&&
+			c.y+c.height/2<this.y+this.height+c.height/2;
+		}
+		this.bang=function(){
+			this.life--;
+			if(this.life==0){
+				this.down=true;
+				this.frameIndex=this.baseFrameCount;
+			}
+		}
+	}
+	var Bullet=function(config){
+		this.background=config.background;
+		this.width=config.width;
+		this.height=config.height;
+		this.speed=config.speed;
+		this.lastTime=0;
+		this.x=hero.x+hero.width/2-this.width/2;
+		this.y=hero.y-this.height;
+		this.step=function(){
+			var currentTime=new Date().getTime();
+			if(currentTime-this.lastTime>=this.speed){
+				this.y-=10;
+				this.lastTime=currentTime;
+			}
+		}
+		this.paint=function(ctx){
+			ctx.drawImage(this.background,this.x,this.y);
+		}
+		this.outOfBounds=function(){
+			return this.y<-this.height;
+		}
+	}
+	var Jiguang=function(){
+		this.x=parseInt(Math.random()*1000);
+		this.y=Math.random()*650;
+		this.jiguangSpeed=0;
+		this.canDelete=false;
+		this.step=function(ctx){
+				if(interval>=500){
+				if(this.jiguangSpeed<=110){
+					this.jiguangSpeed++;
+				}
+						if(this.jiguangSpeed>=10){
+						ctx.fillRect(this.x,0,5,HEIGHT);
+						}
+						if(this.jiguangSpeed>=100){
+							ctx.fillStyle="red";
+							ctx.fillRect(this.x,0,5,HEIGHT);
+							jiu.play();
+							if(hero.x<=this.x+5&&hero.x+hero.width>=this.x){
+								if(!wudi){
+									hero.canDelete=true;
+									xiaobao.play();
+									hero.x=0;
+								}
+							}
+						}
+						if(this.jiguangSpeed>=105){
+							ctx.fillStyle="#666";
+							this.canDelete=true;
+							this.x=parseInt(Math.random()*1000);
+						}
+				}	
+			}
+	}
+	
+	
+	
+	/*******************创建对象*******************/
+	var sky=new Sky(SKY);
+	var l=new Loading(LOADING);
+	var hero=new Hero(HERO);
+	var enemies=[];
+	var bullets=[];
+	var jiguang=[];
+	
+	
+	
+	
+	
+	/***********************操作方法**********************/
+	setInterval(function(){
+	
+		
+		switch(state){
+			case START:
+				sky.step();
+				sky.paint(ctx);
+				showLogo(ctx);
+				break;
+			case STARTING:
+				sky.step();
+				sky.paint(ctx);
+				l.step();
+				l.paint(ctx);
+				break;
+			case RUNNING:
+				sky.step();
+				sky.paint(ctx);
+				
+				
+				
+				componentEnter(ctx);
+				componentStep(ctx);
+				componentDelete();
+				componentPaint(ctx);
+				
+				hero.step();
+				hero.paint(ctx);
+				hero.shoot();
+				
+				boss1(ctx);
+				
+				drawText(ctx);
+				checkHit();
+				heroMove();
+				
+				
+			
+				break;
+			case PAUSE:
+				sky.step();
+				boss1(ctx);
+				//sky.paint(ctx);
+				//drawPause(ctx);
+				drawText(ctx);
+				hero.paint(ctx);
+				componentPaint(ctx);
+				
+				break;
+			case GAMEOVER:
+				drawOver(ctx);
+				break;
+			case YES:
+				drawYes(ctx);
+				break;
+		}
+		
+	},1000/100);
+	
+	
+	function showLogo(ctx){
+		ctx.drawImage(logo,(WIDTH-logo.width)/2,
+		(HEIGHT-logo.height)/2);
+	}
+	canvas.onclick=function(){
+		if(state==START){
+			state=STARTING;
+		}
+	}
+	canvas.onmouseout=function(){
+		if(state==RUNNING){
+			state=PAUSE;
+		}
+	}
+	canvas.onmouseover=function(){
+		if(state==PAUSE){
+			state=RUNNING;
+		}
+	}
+	var div=document.getElementById("stage");
+	/*canvas.onmousemove=function(e){
+		if(state==RUNNING){
+		hero.x=e.offsetX-hero.width/2;
+		hero.y=e.offsetY-hero.height/2;
+		}
+	}*/
+	var dir={left:false,up:false,right:false,down:false};
+	function heroMove(){
+		if(dir.left){
+			hero.x-=SSS;
+			if(hero.x<=0){
+				hero.x=0;
+			}
+		}
+		if(dir.up){
+			hero.y-=SSS;
+			if(hero.y<=0){
+				hero.y=0;
+			}
+		}
+		if(dir.right){
+			hero.x+=SSS;
+			if(hero.x>=WIDTH-hero.width){
+				hero.x=WIDTH-hero.width;
+			}
+		}
+		if(dir.down){
+			hero.y+=SSS;
+			if(hero.y>=HEIGHT-hero.height){
+				hero.y=HEIGHT-hero.height;
+			}
+		}
+			
+		}
+	
+	document.onkeydown=function(e){
+		if(state==RUNNING){
+			if(e.keyCode==38){
+				dir.up=true;
+				dir.left=false;
+				dir.right=false;
+				dir.down=false;
+				if(panding){
+					shang=true;
+				}
+			}
+			else if(e.keyCode==39){
+				dir.right=true;
+				dir.up=false;
+				dir.left=false;
+				dir.down=false;
+				if(panding){
+					you=true;
+				}
+			}
+			else if(e.keyCode==40){
+				dir.down=true;
+				dir.up=false;
+				dir.left=false;
+				dir.right=false;
+				if(panding){
+					xia=true;
+				}
+			}
+			else if(e.keyCode==37){
+				dir.left=true;
+				dir.up=false;
+				dir.right=false;
+				dir.down=false;
+				if(panding){
+					zuo=true;
+				}
+			}
+		}if(state==PAUSE&&panding){
+			if(e.keyCode==37){zuo=true;}
+			if(e.keyCode==38){shang=true;}
+			if(e.keyCode==39){you=true;}
+			if(e.keyCode==40){xia=true;}
+			if(e.keyCode==32){kong=true;}
+		}
+			if(e.keyCode==32){
+				if(panding){
+					kong=true;
+				}
+				if(state==START){
+					state=STARTING;
+					hero.x=WIDTH/2-hero.width/2;
+				}
+				if(state==GAMEOVER||state==YES){
+					enemies=[];
+					state=START;
+					
+					dir.up=false;
+					dir.down=false;
+					dir.right=false;
+					dir.left=false;
+					LIFE=10;
+					interval=400;
+					SHOOTINTERVAL=100;
+					SSS=5;
+					SCORE=0;
+					hero.x=WIDTH/2-hero.width/2;
+					hero.y=HEIGHT-hero.height;
+					xx=true;
+					BOSSTIME=0;
+					hero.bisha_hong=false;
+					hero.bisha_bai=false;
+					lastTime=0;
+					jiguanginterval=500;
+				}
+				
+			}
+
+
+	}
+	document.onkeyup=function(e){
+		if(state==RUNNING){
+			if(e.keyCode==37){
+				dir.left=false;
+			}
+			if(e.keyCode==38){
+				dir.up=false;
+			}
+			if(e.keyCode==39){
+				dir.right=false;
+			}
+			if(e.keyCode==40){
+				dir.down=false;
+			}
+			
+		}
+	}
+
+
+
+
+
+
+
+
+
+//**************************************BOSS*************************************//
+	var BOSSTIME=0;
+	var xx=true;
+	function boss1(ctx){
+		if(interval>=500){
+		bossbg.play();
+			enemies=[];
+ 		if(BOSSTIME<400){
+			BOSSTIME++;
+			if(hero.x+hero.width/2>150-hero.width/2&&
+			hero.x+hero.width/2<150+60+hero.width/2&&
+			hero.y+hero.height/2>500-hero.height/2&&
+			hero.y+hero.height/2<500+107+hero.height/2){
+				xx=false;
+				hero.bisha_hong=true;
+				hero.bisha_bai=true;
+			}
+			setTimeout(function(){
+				ctx.drawImage(bo,100,0);
+				if(xx){
+				
+					ctx.drawImage(buji,150,500);
+				}
+
+			},1000);
+		}else{
+			if(!wudi){
+				ctx.drawImage(bo,100,0);
+			}else{
+				ctx.drawImage(bo,Math.random()*200,Math.random()*20);
+			}
+		}
+		if(interval>=500){
+			ctx.drawImage(hong,5,HEIGHT-85);
+		}
+		if(interval>=500){
+			ctx.drawImage(bai,WIDTH-85,HEIGHT-85);
+		}if(hongsha){
+			if(hongx>40||hongx<=30){hongx-=40;}
+			if(hongx<=40&&hongx>30){hongx-=0.2;}
+			ctx.drawImage(hongtu,hongx,350);
+			if(canBo){
+			hong3.play();
+			canBo=false;
+			}
+		}
+		if(baisha){
+			if(hongx>40||hongx<=30){hongx-=40;}
+			if(hongx<=40&&hongx>30){hongx-=0.2;}
+			//console.log(hongx);
+			ctx.drawImage(baitu,hongx,350);
+			if(canBo){
+			bai3.play();
+			canBo=false;
+			}
+		}
+		if(BOSSTIME<=6000){
+			BOSSTIME++;
+			if(BOSSTIME>=1500&&BOSSTIME<=1600){
+				panding=true;
+				if(state!=PAUSE){
+				state=PAUSE;
+				}else{
+				bosssha(ctx);
+				}
+				jiguanginterval=200;
+				
+			}if(BOSSTIME>1600&&BOSSTIME<2100){
+				if(wudi){
+					baozha.play();
+				}else{
+					jiujiu.play();
+				}
+			}
+			if(BOSSTIME>3200&&BOSSTIME<3700){
+				if(wudi){
+					baozha.play();
+				}else{
+					jiujiu.play();
+				}
+			}
+			if(BOSSTIME>4000&&BOSSTIME<4500){
+				if(wudi){
+					baozha.play();
+				}else{
+					jiujiu.play();
+				}
+			}
+			if(BOSSTIME==2100){
+				jiguanginterval=500;
+				wudi=false;hongsha=false;
+				baisha=false;hongx=WIDTH;canBo=true;
+			}if(BOSSTIME>=3130&&BOSSTIME<=3200){
+				panding=true;
+				if(state!=PAUSE){
+				state=PAUSE;
+				}else{
+				bosssha(ctx);
+				}
+				jiguanginterval=200;
+			}if(BOSSTIME==3700){
+				jiguanginterval=500;
+				wudi=false;hongsha=false;
+				baisha=false;hongx=WIDTH;canBo=true;
+			}
+			if(BOSSTIME>=3940&&BOSSTIME<=4000){
+				panding=true;
+				if(state!=PAUSE){
+				state=PAUSE;
+				}else{
+				bosssha(ctx);
+				}
+				jiguanginterval=200;
+			}
+			if(BOSSTIME==4500){
+				state=YES;
+			}
+		}
+		
+		}
+	}
+	var canBo=true;
+	var hongx=WIDTH;
+	var panding=false;
+	var shang=false;
+	var xia=false;
+	var zuo=false;
+	var you=false;
+	var kong=false;
+	var wudi=false;
+	var hongsha=false;
+	var baisha=false;
+	var x=Math.random();
+	function bosssha(ctx){
+		if(x<0.5){
+			ctx.drawImage(bosshong,0,0);
+			siba.play();
+			if(shang&&xia&&kong){
+				wudi=true;
+				hongsha=true;
+			}
+		}else{
+			ctx.drawImage(bossbai,0,0);
+			siba.play();
+			if(zuo&&you&&kong){
+				wudi=true;
+				baisha=true;
+			}
+		}
+		if(BOSSTIME==1600||BOSSTIME==3200||BOSSTIME==4000){
+			state=RUNNING;
+			panding=false;
+			shang=false;
+			xia=false;
+			zuo=false;
+			you=false;
+			kong=false;
+			x=Math.random();
+		}
+		
+	}
+	
+	
+	
+	
+	
+//**************************************BOSS*************************************//
+	function drawText(ctx){
+		//console.log(ctx);
+		ctx.font="bold 20px Verdana";
+		ctx.textAlign="left";
+		ctx.textBaseline="hanging";
+		ctx.fillText("SCORE:"+SCORE,20,10);
+		ctx.fillText("LIFE:0"+LIFE,20,38);
+		ctx.fillText("奖励分达到500可召唤BOSS-1",700,10);
+		ctx.fillText("奖励分:"+interval,850,50);
+	}
+	function drawOver(ctx){
+		ctx.font="bold 70px Verdana";
+		ctx.textAlign="left";
+		ctx.fillText("SCORE:"+SCORE,300,300);
+		ctx.font="bold 50px Verdana";
+		ctx.textAlign="left";
+		ctx.fillText("点击空格重新开始",300,400);
+	}
+	function drawYes(ctx){
+		ctx.font="bold 70px Verdana";
+		ctx.textAlign="left";
+		ctx.fillText("通关：敬请期待",300,300);
+		ctx.font="bold 50px Verdana";
+		ctx.textAlign="left";
+		ctx.fillText("点击空格重新开始",300,400);
+	}
+	function drawPause(ctx){
+		ctx.drawImage(pause,(WIDTH-pause.width)/2,(HEIGHT-pause.height)/2);
+	
+	}
+	
+	function componentEnter(ctx){
+	
+		var currentTime=new Date().getTime();
+		if(currentTime-lastTime>=interval){
+		
+			var num=Math.floor(Math.random()*10);
+			
+			if(num<=7){
+			
+				enemies.push(new Enemy(ENEMY1));
+				
+			}else if(num==8){
+				enemies.push(new Enemy(ENEMY2));
+			}else if(num==9){
+				if(enemies[0]==null||enemies[0].type!=3){
+					enemies.splice(0,0,new Enemy(ENEMY3));
+				}
+			}
+			lastTime=currentTime;
+		}
+		var currentTime2=new Date().getTime();
+		
+		if(currentTime2-lastTime2>=jiguanginterval){
+			jiguang.push(new Jiguang());
+			lastTime2=currentTime2;
+		}
+	}
+	var lastTime2=0;
+	function componentStep(){
+		for(var i=0;i<enemies.length;i++){
+			enemies[i].step();
+		}
+		for(var i=0;i<bullets.length;i++){
+			bullets[i].step();
+		}
+		for(var i=0;i<jiguang.length;i++){
+			jiguang[i].step(ctx);
+		}
+	}
+	function componentPaint(ctx){
+		for(var i=0;i<enemies.length;i++){
+			enemies[i].paint(ctx);
+		}
+		for(var i=0;i<bullets.length;i++){
+			bullets[i].paint(ctx);
+		}
+	}
+	function componentDelete(){
+		for(var i=0;i<enemies.length;i++){
+			if(enemies[i].canDelete&&enemies[i].type==3){
+				
+				if(SHOOTINTERVAL>20){
+					SHOOTINTERVAL-=20;
+				}
+				LIFE++;
+			}
+			if(enemies[i].outOfBounds()&&enemies[i].type==1){
+				if(interval>=50){
+					interval-=5;
+				}
+			}
+			if(enemies[i].canDelete&&enemies[i].type==2){
+				if(interval<=500){
+					if(SHOOTINTERVAL!=20){
+						interval+=5;
+					}else{
+						interval+=20;
+					}
+				}else{
+					enemies=[];
+				}
+			}
+			if(enemies[i].outOfBounds()||enemies[i].canDelete){
+				enemies.splice(i,1);
+			}
+		}
+		for(var i=0;i<bullets.length;i++){
+			if(bullets[i].outOfBounds()||bullets[i].canDelete){
+				bullets.splice(i,1);
+			}
+		}
+		for(var i=0;i<jiguang.length;i++){
+			if(jiguang[i].canDelete){
+				jiguang.splice(i,1);
+			}
+		}
+		if(hero.canDelete){
+			LIFE--;
+			hero.canDelete=false;
+			if(LIFE==0){
+				state=GAMEOVER;
+				hero.canDelete=false;
+			}
+		}
+	}
+	function checkHit(){
+		for(var i=0;i<enemies.length;i++){
+		
+			if(enemies[i].down||enemies[i].canDelete){
+				continue;
+			}
+			if(enemies[i].hit(hero)){
+				hero.frameIndex=hero.baseFrameCount;
+				hero.down=true;
+				enemies[i].bang();
+				
+				
+			}
+			if(enemies[i].down||enemies[i].canDelete){
+				continue;
+			}
+			for(var j=0;j<bullets.length;j++){
+				if(enemies[i].hit(bullets[j])){
+					enemies[i].bang();
+					bullets[j].canDelete=true;
+				}
+			}
+		}
+	}
+	function tiaoji(){
+		interval=500;
+	}
+	
+	
+	
+</script>
+
+</body>
+</html>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
